@@ -60,10 +60,6 @@ void TokenizeFileContent(std::vector<std::string>& output, char* content) {
     }
 }
 
-bool operator<(const Pair& a, const Pair& b) {
-    return (a.first < b.first && a.second < b.second);
-}
-
 //////////////////////////////////////////////////////////////////
 void GenerateDiffMap(
         std::vector<Pair>& output,
@@ -81,15 +77,20 @@ void GenerateDiffMap(
     bool* changeLineUsage = new bool[change.size()];
     memset(changeLineUsage, 0, change.size());
 
+    // Last found index.
+    unsigned int lastFound = 0;
+
     // Iterate over base.
     for (unsigned int i = 0; i < base.size(); ++i) {
-        auto it = find(change.begin(), change.end(), base[i]);
+        auto it = find(change.begin() + lastFound, change.end(), base[i]);
         // If we found.
         if (it != change.end()) {
             // Set chnage usage flag.
             changeLineUsage[it - change.begin()] = true;
             // Add ref.
             output.push_back({i + 1, it - change.begin() + 1});
+            // Move last found.
+            lastFound = it - change.begin();
         }
         // If  not insert delete ref.
         else
@@ -180,15 +181,15 @@ void DisplayDiffResult(
     for (int i = 0; i < diffMap.size(); ++i) {
         // If both values are greater then 0, then no change.
         if (diffMap[i].first > 0 && diffMap[i].second > 0)
-            cout <<"\033[0m"<<" "<<base[diffMap[i].first - 1]<<"\n";
+            cout <<"\033[0m"<<"  "<<base[diffMap[i].first - 1]<<"\n";
            // printf("\033[0m %s\n", base[i]);
         // If second is 0, then we have deletion.
         else if (diffMap[i].second == 0)
-            cout <<"\033[0;31m"<<"-"<<base[diffMap[i].first - 1]<<"\n";
+            cout <<"\033[0;31m"<<"- "<<base[diffMap[i].first - 1]<<"\n";
             //printf("\033[0;31m-%s\n", base[i]);
         // If first is 0, then we have additoon.
         else if (diffMap[i].first == 0)
-            cout <<"\033[0;32m"<<"+"<<change[diffMap[i].second - 1]<<"\n";
+            cout <<"\033[0;32m"<<"+ "<<change[diffMap[i].second - 1]<<"\n";
             //printf("\033[0;32m+%s\n", change[i]);
     }
 
@@ -196,36 +197,46 @@ void DisplayDiffResult(
     cout <<"\033[0m";
 }
 
+bool operator<(const Pair& a, const Pair& b) noexcept {
+    // Check if we deal with position-independent elements.
+    bool isAConst = (a.first != 0 && a.second != 0);
+    bool isBConst = (b.first != 0 && b.second != 0);
+
+    // We do not swap const position elements.
+    if (isAConst && isBConst)
+        return false;
+    else {
+        // If both first values are not 0.
+        if (a.first != 0 && b.first != 0)
+            return a.first < b.first;
+        // If both second values are not 0.
+        else if (a.second != 0 && b.second != 0)
+            return a.second < b.second;
+        // Mixed condition.
+        // a.first is zero and b.second is zero and vice-versa.
+        else
+            return false;
+    }
+}
+
 //////////////////////////////////////////////////////////////////
 void SortDiffMap(std::vector<Pair>& diffMap) {
     // We bouble sort only pairs which have one 0.
     // We start from last element.
 
-    // This variable says if we swaped elements.
     bool swapped;
+
     do {
-       // Reset.
         swapped = false;
 
-        for (int i = (diffMap.size() - 1); i > 0; --i) {
-            // Do only if lower element contains 0.
-            if (diffMap[i].first == 0 || diffMap[i].second == 0) {
-                // Compare if first.
-                if (diffMap[i].first != 0) {
-                    if (diffMap[i].first < diffMap[i - 1].first) {
-                        std::swap(diffMap[i], diffMap[i - 1]);
-                        swapped = true;
-                    }
-                }
-                // Compare if second.
-                else {
-                    if (diffMap[i].second < diffMap[i - 1].second) {
-                        std::swap(diffMap[i], diffMap[i - 1]);
-                        swapped = true;
-                    }
+        for (int i = diffMap.size() -1; i > 0; --i) {
+            for (int j = i - 1; j >= 0; --j) {
+                if (diffMap[i] < diffMap[j]) {
+                    std::swap(diffMap[i--], diffMap[j]);
+                    swapped = true;
                 }
             }
         }
     }
-    while(swapped);
+    while (swapped);
 }

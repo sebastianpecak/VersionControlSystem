@@ -30,8 +30,6 @@ struct Pair {
     int second;
 };
 
-bool operator<(const Pair& a, const Pair& b);
-
 //////////////////////////////////////////////////////////////////
 void GenerateDiffMap(std::vector<Pair>&, const std::vector<std::string>&, const std::vector<std::string>&);
 
