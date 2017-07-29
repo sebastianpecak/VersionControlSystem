@@ -1,5 +1,9 @@
 #include <helpers.hpp>
 #include <cstdio>
+#include <vector>
+#include <map>
+
+using namespace std;
 
 int main(int argc, char** argv) {
     // As app parameters we pass 2 file names.
@@ -29,6 +33,38 @@ int main(int argc, char** argv) {
         DisplayAllocationError(bufferSize, "baseFileBuffer");
         return -3;
     }
-    bufferSize = LoadFileIntoBuffer(file, NULL, 0);
-    char* changedFileBuffer = new char[];
+    LoadFileIntoBuffer(baseFile, baseFileBuffer, bufferSize);
+    bufferSize = LoadFileIntoBuffer(changedFile, NULL, 0);
+    char* changedFileBuffer = new char[bufferSize];
+    // Check for errors.
+    if (!changedFileBuffer) {
+        DisplayAllocationError(bufferSize, "changedFileBuffer");
+        return -3;
+    }
+    LoadFileIntoBuffer(changedFile, changedFileBuffer, bufferSize);
+
+    // Close opened files.
+    fclose(baseFile);
+    fclose(changedFile);
+
+    // Tokens.
+    vector<string> baseFileLines;
+    vector<string> changedFileLines;
+    TokenizeFileContent(baseFileLines, baseFileBuffer);
+    TokenizeFileContent(changedFileLines, changedFileBuffer);
+
+    // Free buffers.
+    delete[] baseFileBuffer;
+    delete[] changedFileBuffer;
+
+    ////////////////////////////////////////////////////////////////////
+    std::vector<Pair> diffMap;
+    GenerateDiffMap(diffMap, baseFileLines, changedFileLines);
+    SortDiffMap(diffMap);
+
+    // Show map.
+    //for (const auto& ref : diffMap)
+      //  printf("%d : %d\n", ref.first, ref.second);
+
+    DisplayDiffResult(diffMap, baseFileLines, changedFileLines);
 }

@@ -8,3 +8,9 @@ SOURCES += main.cpp \
 
 HEADERS += \
     helpers.hpp
+
+DISTFILES += \
+    plik1 \
+    plik2 \
+    ../build-diffTool-Desktop_Qt_5_7_0_GCC_64bit-Debug/plik2 \
+    ../build-diffTool-Desktop_Qt_5_7_0_GCC_64bit-Debug/plik1
