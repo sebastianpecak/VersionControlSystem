@@ -225,15 +225,20 @@ void SortDiffMap(std::vector<Pair>& diffMap) {
     // We start from last element.
 
     bool swapped;
+    // Introduced to optimize sorting.
+    int whereToBegin = diffMap.size() -1;
 
     do {
         swapped = false;
 
-        for (int i = diffMap.size() -1; i > 0; --i) {
+        for (int i = whereToBegin; i > 0; --i) {
+            bool swp = false;
             for (int j = i - 1; j >= 0; --j) {
                 if (diffMap[i] < diffMap[j]) {
                     std::swap(diffMap[i--], diffMap[j]);
                     swapped = true;
+                    if (j == (i + 1))
+                        --whereToBegin;
                 }
             }
         }
