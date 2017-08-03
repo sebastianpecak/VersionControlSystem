@@ -1,4 +1,4 @@
-#include <helpers.hpp>
+#include <Include/diffTool/helpers.hpp>
 #include <cstdio>
 #include <cstring>
 #include <algorithm>
@@ -204,7 +204,7 @@ bool operator<(const Pair& a, const Pair& b) noexcept {
 
     // We do not swap const position elements.
     if (isAConst && isBConst)
-        return false;
+        return (a.first < b.first && a.second < b.second);
     else {
         // If both first values are not 0.
         if (a.first != 0 && b.first != 0)

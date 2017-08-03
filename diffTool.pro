@@ -5,7 +5,8 @@ CONFIG -= qt
 
 SOURCES += \
     Source/diffTool/helpers.cpp \
-    Source/diffTool/main.cpp
+    Source/vcs/vcs.cpp \
+    Source/main.cpp
 
 HEADERS += \
     Include/diffTool/helpers.hpp
